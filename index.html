@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Books</title>
+    <!-- CSS only -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+    <style>
+        .s1 {
+            display: flex;
+            background-color: beige;
+            width: 50%;
+            height: 60px;
+            margin-bottom: 30px;
+            align-items: center;
+            padding-left: 4px;
+            padding-right: 4px;
+        }
+        
+        .more {
+            color: blue;
+            font-weight: bold;
+        }
+        
+        .less {
+            color: yellow;
+            font-weight: bold;
+        }
+    </style>
+    <script src="https://unpkg.com/vue@3"></script>
+
+</head>
+
+<body>
+    <div id="myapp">
+
+        <div class="container navbar bg-dark d-flex align-items-baseline mt-1 ">
+            <a class="navbar-brand me-auto" style="color: yellow;" href="#" @click.prevent="isvisible=false">Books</a>
+            <div class="d-flex align-items-baseline">
+                <p class="text-light me-2"> <span>{{ myWishes.length }}</span> <template v-if="myWishes.length==o||myWishes.length>1"> Books</template> <template v-else> Book</template> with total price <span>{{ currencyFormatter(getTotalPrice()) }}</span></p>
+                <button class="btn btn-outline-success" @click.prevent="isvisible=true">MyWishes</button>
+            </div>
+        </div>
+        <div class="page1" v-if="!isvisible">
+            <div class="container mt-2">
+                <div class="row align-items-center justify-content-center">
+                    <div class="card mb-2" style="width: 20rem;" v-for="book in books" :key="book.id">
+                        <img :src="book.Image" class="card-img-top" style="height: 250px; width: 100%;">
+                        <div class="card-body ">
+                            <div class="div1 d-flex align-items-baseline justify-content-between ">
+                                <span class="s1 ">Category : {{ book.Category }} </span>
+                                <span class="s1 ">Author   : {{ book.Author }} </span>
+                            </div>
+                            <div class="div2 d-flex align-items-baseline justify-content-between ">
+                                <span class="s1 " :class="[book.Pages<50?'less':'',book.Pages>=50?'more':'']">Pages : {{ book.Pages }}</span>
+                                <span class="s1 ">Price : {{ book.Price }}</span>
+                            </div>
+
+                        </div>
+                        <div class="card-footer d-flex align-items-baseline justify-content-between ">
+                            <span>ISBN : {{ book.ISBN }}</span>
+                            <button class="btn btn-primary" @click="addToWishes(book)" :disabled="book.added">AddToWishes</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="page2 " v-if="isvisible">
+            <p class="text-danger text-center mt-5" v-if="myWishes.length==0">There is No Books yet ! Please add one to your wishes</p>
+            <div class="container mt-3" v-if="myWishes.length>0">
+                <div class="row">
+                    <table class="table table-success table-striped">
+                        <thead>
+                            <tr>
+                                <th> Name </th>
+                                <th>Category</th>
+                                <th>Pages</th>
+                                <th>Author</th>
+                                <th>Price</th>
+                                <th>Remove</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="favbook in myWishes">
+                                <td>{{ favbook.Name }}</td>
+                                <td>{{favbook.Category }}</td>
+                                <td>{{ favbook.Pages }}</td>
+                                <td>{{ favbook.Author }}</td>
+                                <td>{{ currencyFormatter(favbook.Price) }}</td>
+                                <td><button class="btn btn-danger" @click="removeFromWishes(favbook)">-</button></td>
+                            </tr>
+                        </tbody>
+                        <tfooter>
+                            <tr>
+                                <th colspan="4">Total</th>
+                                <th colspan="2">{{ currencyFormatter(getTotalPrice()) }}</th>
+                            </tr>
+                            <tr>
+                                <th colspan="4">Taxis</th>
+                                <th colspan="2">{{ currencyFormatter(getTotalPrice()*.1) }}</th>
+                            </tr>
+                            <tr>
+                                <th colspan="4">Grant Total</th>
+                                <th colspan="2">{{ currencyFormatter(getTotalPrice()+getTotalPrice()*.1) }}</th>
+                            </tr>
+                        </tfooter>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="./books.js "></script>
+    <script>
+        const myapp = Vue.createApp({
+            data: () => ({
+                books: books,
+                isvisible: false,
+                myWishes: [],
+
+
+
+
+            }),
+            methods: {
+                currencyFormatter(value) {
+                    let formatter = Intl.NumberFormat("ar-SA", {
+                        style: 'currency',
+                        currency: "SAR",
+                        minimumFractionDigits: 0
+                    });
+                    return formatter.format(value);
+                },
+                addToWishes(book) {
+                    book.added = 1;
+                    this.myWishes.push(book);
+
+
+                },
+                removeFromWishes(book) {
+                    let targetid = 0;
+                    for (let i = 0; i < this.myWishes.length; i++) {
+                        if (this.myWishes[i].id == book.id) {
+                            targetid = i;
+                            break;
+
+                        }
+                    }
+                    this.myWishes.splice(targetid, 1);
+                    book.added = 0;
+
+                },
+                getTotalPrice() {
+                    let total = 0;
+                    for (let i = 0; i < this.myWishes.length; i++) {
+                        total += this.myWishes[i].Price;
+                    }
+                    return total;
+                }
+
+            }
+
+        })
+        myapp.mount("#myapp ");
+    </script>
+
+    <!-- JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js " integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p " crossorigin="anonymous "></script>
+</body>
+
+</html>
